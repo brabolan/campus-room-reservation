@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Room Search</title>
+    <meta charset="UTF-8"/>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, Helvetica, sans-serif;
+            background: #f4f7fb;
+            color: #1f2937;
+        }
+
+        .navbar {
+            background: #1e3a8a;
+            color: white;
+            padding: 16px 32px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .navbar h2 {
+            margin: 0;
+            font-size: 22px;
+        }
+
+        .logout-form {
+            margin: 0;
+        }
+
+        .logout-btn {
+            background: white;
+            color: #1e3a8a;
+            border: none;
+            padding: 10px 16px;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .logout-btn:hover {
+            background: #e5e7eb;
+        }
+
+        .page-container {
+            max-width: 900px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+
+        .page-title {
+            margin-bottom: 24px;
+        }
+
+        .page-title h1 {
+            margin: 0 0 8px 0;
+            font-size: 32px;
+            color: #111827;
+        }
+
+        .page-title p {
+            margin: 0;
+            color: #6b7280;
+        }
+
+        .error-message {
+            background: #fee2e2;
+            color: #b91c1c;
+            border: 1px solid #fecaca;
+            padding: 12px 14px;
+            border-radius: 10px;
+            margin-bottom: 16px;
+        }
+
+        .section {
+            background: white;
+            margin-top: 18px;
+            padding: 22px;
+            border-radius: 16px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .step-heading {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 18px;
+        }
+
+        .step-number {
+            width: 34px;
+            height: 34px;
+            border-radius: 999px;
+            background: #dbeafe;
+            color: #1d4ed8;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+
+        .step-heading h3 {
+            margin: 0;
+            font-size: 20px;
+            color: #111827;
+        }
+
+        .hint {
+            color: #6b7280;
+            font-size: 0.92em;
+            margin-top: 8px;
+        }
+
+        .field-group {
+            margin-bottom: 16px;
+        }
+
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #374151;
+        }
+
+        select,
+        input[type="number"],
+        input[type="datetime-local"] {
+            width: 100%;
+            max-width: 420px;
+            padding: 12px 14px;
+            border: 1px solid #d1d5db;
+            border-radius: 10px;
+            font-size: 15px;
+            background: white;
+        }
+
+        select:focus,
+        input:focus {
+            outline: none;
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+        }
+
+        .checkbox-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 8px;
+        }
+
+        .checkbox-label {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 500;
+            margin-bottom: 0;
+        }
+
+        .checkbox-label input {
+            width: auto;
+            transform: scale(1.1);
+        }
+
+        .search-btn {
+            background: #2563eb;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 10px;
+            font-weight: bold;
+            font-size: 15px;
+            cursor: pointer;
+            transition: background 0.2s ease;
+        }
+
+        .search-btn:hover {
+            background: #1d4ed8;
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .nav-btn {
+            background: white;
+            color: #1e3a8a;
+            padding: 10px 16px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .nav-btn:hover {
+            background: #e5e7eb;
+        }
+    </style>
+</head>
+<body>
+
+<div class="navbar">
+    <h2>Campus Room Reservation</h2>
+    <div class="nav-buttons">
+
+        <a th:href="@{/dashboard}" class="nav-btn">Dashboard</a>
+
+        <form th:action="@{/logout}" method="post" class="logout-form">
+            <button type="submit" class="logout-btn">Logout</button>
+        </form>
+    </div>
+</div>
+
+<div class="page-container">
+
+    <div class="page-title">
+        <h1>Search for an Available Room</h1>
+        <p>Choose a building, set your room preferences, and select a time window.</p>
+    </div>
+
+    <div th:if="${timeError}" class="error-message" th:text="${timeError}"></div>
+    <div th:if="${searchError}" class="error-message" th:text="${searchError}"></div>
+
+    <form th:action="@{/search}"
+          th:object="${searchCriteria}"
+          method="post"
+          id="searchForm"
+          autocomplete="off">
+
+        <!-- STEP 1 -->
+        <div class="section">
+            <div class="step-heading">
+                <div class="step-number">1</div>
+                <h3>Choose a building</h3>
+            </div>
+
+            <div class="field-group">
+                <label for="buildingId">Building</label>
+
+                <select id="buildingId" th:field="*{buildingId}" required>
+                    <option value="" disabled
+                            th:selected="${searchCriteria.buildingId == null}">
+                        Select a building
+                    </option>
+
+                    <option th:each="b : ${buildings}"
+                            th:value="${b.id}"
+                            th:text="${b.name}">
+                    </option>
+                </select>
+            </div>
+
+            <div class="hint">
+                Select a building to reveal room filters.
+            </div>
+        </div>
+
+        <!-- STEP 2 -->
+        <div class="section hidden" id="filtersSection">
+            <div class="step-heading">
+                <div class="step-number">2</div>
+                <h3>Room filters</h3>
+            </div>
+
+            <div class="field-group">
+                <label for="minCapacity">Minimum Capacity</label>
+                <input
+                    id="minCapacity"
+                    type="number"
+                    min="1"
+                    th:field="*{minCapacity}"
+                    required
+                />
+            </div>
+
+            <div class="field-group">
+                <label>Amenities</label>
+                <div class="checkbox-group">
+                    <label class="checkbox-label">
+                        <input type="checkbox" th:field="*{hasWhiteboard}"/>
+                        Needs Whiteboard
+                    </label>
+
+                    <label class="checkbox-label">
+                        <input type="checkbox" th:field="*{hasProjector}"/>
+                        Needs Projector
+                    </label>
+                </div>
+            </div>
+
+            <div class="hint">
+                Enter a minimum capacity to unlock time selection.
+            </div>
+        </div>
+
+        <!-- STEP 3 -->
+        <div class="section hidden" id="timeSection">
+            <div class="step-heading">
+                <div class="step-number">3</div>
+                <h3>Choose a time window</h3>
+            </div>
+
+            <div class="field-group">
+                <label for="start">Start</label>
+                <input
+                    id="start"
+                    type="datetime-local"
+                    th:field="*{startTime}"
+                    required
+                />
+            </div>
+
+            <div class="field-group">
+                <label for="end">End</label>
+                <input
+                    id="end"
+                    type="datetime-local"
+                    th:field="*{endTime}"
+                    required
+                />
+            </div>
+
+            <div style="margin-top: 18px;">
+                <button type="submit" class="search-btn">Search</button>
+            </div>
+        </div>
+
+    </form>
+</div>
+
+<script>
+    const buildingSelect = document.getElementById("buildingId");
+    const minCapacityInput = document.getElementById("minCapacity");
+    const filtersSection = document.getElementById("filtersSection");
+    const timeSection = document.getElementById("timeSection");
+
+    window.addEventListener("pageshow", () => {
+        buildingSelect.value = "";
+        if (minCapacityInput) minCapacityInput.value = "";
+        updateVisibility();
+    });
+
+    function hasSelectedBuilding() {
+        return buildingSelect.value !== "";
+    }
+
+    function filtersComplete() {
+        const capacity = parseInt(minCapacityInput.value, 10);
+        return Number.isFinite(capacity) && capacity >= 1;
+    }
+
+    function updateVisibility() {
+        const step1Complete = hasSelectedBuilding();
+
+        if (step1Complete) {
+            filtersSection.classList.remove("hidden");
+        } else {
+            filtersSection.classList.add("hidden");
+            timeSection.classList.add("hidden");
+            return;
+        }
+
+        if (filtersComplete()) {
+            timeSection.classList.remove("hidden");
+        } else {
+            timeSection.classList.add("hidden");
+        }
+    }
+
+    buildingSelect.addEventListener("change", updateVisibility);
+    minCapacityInput.addEventListener("input", updateVisibility);
+
+    updateVisibility();
+</script>
+
+</body>
+</html>

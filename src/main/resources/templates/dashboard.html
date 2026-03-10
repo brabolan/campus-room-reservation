@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Dashboard</title>
+    <meta charset="UTF-8"/>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, Helvetica, sans-serif;
+            background: #f4f7fb;
+            color: #1f2937;
+        }
+
+        .navbar {
+            background: #1e3a8a;
+            color: white;
+            padding: 16px 32px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .navbar h2 {
+            margin: 0;
+            font-size: 22px;
+        }
+
+        .logout-form {
+            margin: 0;
+        }
+
+        .logout-btn {
+            background: white;
+            color: #1e3a8a;
+            border: none;
+            padding: 10px 16px;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .logout-btn:hover {
+            background: #e5e7eb;
+        }
+
+        .page-container {
+            max-width: 1100px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .page-header h1 {
+            margin: 0;
+            font-size: 32px;
+            color: #111827;
+        }
+
+        .card {
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 48px 24px;
+            color: #6b7280;
+        }
+
+        .empty-state h3 {
+            margin-top: 0;
+            color: #374151;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            overflow: hidden;
+            border-radius: 12px;
+        }
+
+        thead {
+            background: #eff6ff;
+        }
+
+        th {
+            text-align: left;
+            padding: 14px 16px;
+            font-size: 14px;
+            color: #1e3a8a;
+            border-bottom: 1px solid #dbeafe;
+        }
+
+        td {
+            padding: 16px;
+            border-bottom: 1px solid #e5e7eb;
+            vertical-align: middle;
+        }
+
+        tbody tr:hover {
+            background: #f9fafb;
+        }
+
+        .cancel-form {
+            margin: 0;
+        }
+
+        .cancel-btn {
+            background: #dc2626;
+            color: white;
+            border: none;
+            padding: 10px 14px;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.2s ease;
+        }
+
+        .cancel-btn:hover {
+            background: #b91c1c;
+        }
+
+        .reservation-time {
+            font-size: 14px;
+            color: #374151;
+        }
+
+        .room-pill {
+            display: inline-block;
+            background: #e0f2fe;
+            color: #0369a1;
+            padding: 6px 10px;
+            border-radius: 999px;
+            font-size: 13px;
+            font-weight: bold;
+        }
+
+        .search-btn {
+            background: #2563eb;
+            color: white;
+            border: none;
+            padding: 12px 18px;
+            border-radius: 10px;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .search-btn:hover {
+            background: #1d4ed8;
+        }
+    </style>
+</head>
+<body>
+
+<div class="navbar">
+    <h2>Campus Room Reservation</h2>
+    <form th:action="@{/logout}" method="post" class="logout-form">
+        <button type="submit" class="logout-btn">Logout</button>
+    </form>
+</div>
+
+<div class="page-container">
+
+    <div class="page-header">
+        <h1>My Reservations</h1>
+        <form th:action="@{/search}" method="get">
+            <button type="submit" class="search-btn">Search Rooms</button>
+        </form>
+    </div>
+
+    <div class="card" th:if="${#lists.isEmpty(reservations)}">
+        <div class="empty-state">
+            <h3>No reservations yet</h3>
+            <p>You have not booked any rooms yet. Start by searching for an available room.</p>
+        </div>
+    </div>
+
+    <div class="card" th:if="${!#lists.isEmpty(reservations)}">
+        <table>
+            <thead>
+                <tr>
+                    <th>Building</th>
+                    <th>Room</th>
+                    <th>Start</th>
+                    <th>End</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="r : ${reservations}">
+                    <td th:text="${r.room.building.name}">Building</td>
+                    <td>
+                        <span class="room-pill" th:text="${r.room.roomNumber}">101</span>
+                    </td>
+                    <td class="reservation-time" th:text="${r.startTime}">Start</td>
+                    <td class="reservation-time" th:text="${r.endTime}">End</td>
+                    <td>
+                        <form th:action="@{/reservations/{id}/cancel(id=${r.id})}" method="post" class="cancel-form">
+                            <button type="submit" class="cancel-btn">Cancel</button>
+                        </form>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+</div>
+
+</body>
+</html>
